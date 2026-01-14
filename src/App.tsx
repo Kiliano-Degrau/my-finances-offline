@@ -1,27 +1,46 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import React, { useEffect, useState } from 'react';
+import { I18nProvider, useI18n } from '@/lib/i18n';
+import { initializeDB } from '@/lib/db';
+import Dashboard from '@/pages/Dashboard';
+import { Toaster } from '@/components/ui/sonner';
 
-const queryClient = new QueryClient();
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', prefersDark);
+  }, []);
+  return <>{children}</>;
+}
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function AppContent() {
+  const [ready, setReady] = useState(false);
+  const { t } = useI18n();
 
-export default App;
+  useEffect(() => {
+    initializeDB().then(() => setReady(true));
+  }, []);
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-4xl mb-2">🐷</div>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <Dashboard />;
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <I18nProvider>
+        <AppContent />
+        <Toaster />
+      </I18nProvider>
+    </ThemeProvider>
+  );
+}

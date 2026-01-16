@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n';
-import { Category, getAllCategories, getCategoriesByType, addCategory, updateCategory, deleteCategory } from '@/lib/db';
+import { Category, getCategories, getCategoriesByType, addCategory, updateCategory, deleteCategory } from '@/lib/db';
 
 const CATEGORY_COLORS = [
   '#FF5555', '#FF79C6', '#FFB86C', '#F1FA8C', '#50FA7B',
@@ -109,8 +109,7 @@ export function CategorySelector({ open, onClose, type, selectedId, onSelect }: 
     if (!newName.trim()) return;
 
     if (editingCategory) {
-      await updateCategory({
-        ...editingCategory,
+      await updateCategory(editingCategory.id, {
         name: newName,
         color: newColor,
         icon: newIcon,

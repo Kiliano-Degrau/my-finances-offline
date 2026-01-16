@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n';
-import { Account, getAllAccounts, addAccount, updateAccount, deleteAccount } from '@/lib/db';
+import { Account, getAccounts, addAccount, updateAccount, deleteAccount } from '@/lib/db';
 
 const ACCOUNT_COLORS = [
   '#BD93F9', '#FF79C6', '#8BE9FD', '#50FA7B', '#FFB86C',
@@ -46,7 +46,7 @@ export function AccountSelector({ open, onClose, selectedId, onSelect }: Account
   }, [open]);
 
   const loadAccounts = async () => {
-    const accs = await getAllAccounts();
+    const accs = await getAccounts();
     setAccounts(accs);
   };
 
@@ -93,8 +93,7 @@ export function AccountSelector({ open, onClose, selectedId, onSelect }: Account
     if (!newName.trim()) return;
 
     if (editingAccount) {
-      await updateAccount({
-        ...editingAccount,
+      await updateAccount(editingAccount.id, {
         name: newName,
         color: newColor,
         icon: newIcon,

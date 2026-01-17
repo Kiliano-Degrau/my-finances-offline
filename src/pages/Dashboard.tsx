@@ -1,30 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { getAccounts, getTransactionsByMonth, getAccountBalances, Account, Transaction } from '@/lib/db';
+import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, Account, Transaction, Category } from '@/lib/db';
 import { formatCurrency } from '@/lib/currencies';
-import { Plus, Settings, PiggyBank, WifiOff, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Settings, PiggyBank, WifiOff, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TransactionSheet from '@/components/TransactionSheet';
 import SettingsSheet from '@/components/SettingsSheet';
+import { TransactionList } from '@/components/TransactionList';
+import { MonthPicker } from '@/components/MonthPicker';
+import Reports from '@/pages/Reports';
 
 export default function Dashboard() {
   const { t } = useI18n();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balances, setBalances] = useState<Record<string, Record<string, number>>>({});
   const [showFab, setShowFab] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense' | null>(null);
+  const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   const loadData = async () => {
-    const [acc, tx, bal] = await Promise.all([
+    const [acc, cats, tx, bal] = await Promise.all([
       getAccounts(),
+      getCategories(),
       getTransactionsByMonth(currentDate.getFullYear(), currentDate.getMonth()),
       getAccountBalances(),
     ]);
     setAccounts(acc);
+    setCategories(cats);
     setTransactions(tx);
     setBalances(bal);
   };
@@ -40,11 +48,14 @@ export default function Dashboard() {
   const pendingIncome = incomes.filter(tx => !tx.isCompleted).reduce((sum, tx) => sum + tx.value, 0);
   const pendingExpense = expenses.filter(tx => !tx.isCompleted).reduce((sum, tx) => sum + tx.value, 0);
 
-  const monthNames = [
-    t('months.january'), t('months.february'), t('months.march'), t('months.april'),
-    t('months.may'), t('months.june'), t('months.july'), t('months.august'),
-    t('months.september'), t('months.october'), t('months.november'), t('months.december')
-  ];
+  const handleTransactionClick = (tx: Transaction) => {
+    setEditTransaction(tx);
+    setTransactionType(tx.type);
+  };
+
+  if (showReports) {
+    return <Reports onBack={() => setShowReports(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -61,22 +72,20 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground">{t('app.fullName')}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
-            <Settings className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={() => setShowReports(true)}>
+              <BarChart3 className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
+              <Settings className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
         {/* Month Selector */}
-        <div className="text-center">
-          <button 
-            className="text-xl font-semibold text-foreground hover:text-primary transition-colors"
-            onClick={() => {/* TODO: Month picker */}}
-          >
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </button>
-        </div>
+        <MonthPicker currentDate={currentDate} onDateChange={setCurrentDate} />
 
         {/* Account Balances */}
         <Card>
@@ -137,13 +146,13 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {transactions.length === 0 && (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              {t('dashboard.noTransactions')}
-            </CardContent>
-          </Card>
-        )}
+        {/* Transactions List */}
+        <TransactionList
+          transactions={transactions}
+          categories={categories}
+          accounts={accounts}
+          onTransactionClick={handleTransactionClick}
+        />
       </main>
 
       {/* FAB */}
@@ -178,8 +187,9 @@ export default function Dashboard() {
       {/* Transaction Sheet */}
       <TransactionSheet
         type={transactionType}
-        onClose={() => setTransactionType(null)}
-        onSave={() => { setTransactionType(null); loadData(); }}
+        editTransaction={editTransaction}
+        onClose={() => { setTransactionType(null); setEditTransaction(null); }}
+        onSave={() => { setTransactionType(null); setEditTransaction(null); loadData(); }}
       />
 
       {/* Settings Sheet */}

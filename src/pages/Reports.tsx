@@ -10,7 +10,7 @@ import { MonthPicker } from '@/components/MonthPicker';
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from 'recharts';
 
 interface ReportsProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export default function Reports({ onBack }: ReportsProps) {
@@ -118,13 +118,15 @@ export default function Reports({ onBack }: ReportsProps) {
   const totalIncome = incomeByCategory.reduce((sum, c) => sum + c.value, 0);
 
   return (
-    <div className="min-h-screen bg-background pb-6">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b px-4 py-3">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
+          {onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack}>
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          )}
           <h1 className="font-bold text-lg">{t('reports.title')}</h1>
         </div>
       </header>

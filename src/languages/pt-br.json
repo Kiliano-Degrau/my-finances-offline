@@ -150,6 +150,11 @@
     "effectuated": "efetivado",
     "pending": "pendente"
   },
+  "nav": {
+    "dashboard": "Início",
+    "reports": "Relatórios",
+    "settings": "Configurações"
+  },
   "settings": {
     "title": "Configurações",
     "profile": "Perfil",
@@ -168,6 +173,9 @@
     "appearance": "Aparência",
     "accentColor": "Cor de destaque",
     "theme": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema",
     "themeAuto": "Automático",
     "themeLight": "Claro",
     "themeDark": "Escuro",
@@ -175,9 +183,12 @@
     "dateFormat": "Formato da data",
     "dateFormatAuto": "Automático",
     "language": "Idioma",
+    "localization": "Idioma e Moeda",
+    "defaultCurrency": "Moeda padrão",
     "data": "Dados",
+    "dataManagement": "Gerenciamento de Dados",
     "deleteAllData": "Deletar todos os dados",
-    "deleteWarning": "Esta ação é irreversível!",
+    "deleteWarning": "Esta ação é irreversível! Todos os seus dados serão permanentemente apagados.",
     "deleteConfirm1": "Tem certeza?",
     "deleteConfirm1Desc": "Todos os seus dados serão permanentemente apagados.",
     "deleteConfirm2": "Confirmação Final",
@@ -185,10 +196,18 @@
     "deleteConfirm3": "Última Chance",
     "deleteConfirm3Desc": "Esta é sua última chance de cancelar. Realmente deseja apagar tudo?",
     "deleteSuccess": "Todos os dados foram apagados com sucesso.",
+    "dataDeleted": "Dados excluídos com sucesso",
     "about": "Sobre",
+    "aboutDesc": "Aplicativo de controle financeiro pessoal 100% offline. Seus dados nunca saem do seu dispositivo.",
     "version": "Versão",
     "exportData": "Exportar Dados",
-    "importData": "Importar Dados"
+    "exportSuccess": "Dados exportados com sucesso",
+    "importData": "Importar Dados",
+    "installApp": "Instalar Aplicativo",
+    "installDesc": "Acesso rápido e uso offline",
+    "install": "Instalar",
+    "installSuccess": "App instalado com sucesso!",
+    "saved": "Configurações salvas"
   },
   "pwa": {
     "installTitle": "Instalar MFO",

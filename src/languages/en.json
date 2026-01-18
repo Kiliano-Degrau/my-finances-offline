@@ -150,6 +150,11 @@
     "effectuated": "effectuated",
     "pending": "pending"
   },
+  "nav": {
+    "dashboard": "Home",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
   "settings": {
     "title": "Settings",
     "profile": "Profile",
@@ -168,6 +173,9 @@
     "appearance": "Appearance",
     "accentColor": "Accent color",
     "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
     "themeAuto": "Automatic",
     "themeLight": "Light",
     "themeDark": "Dark",
@@ -175,9 +183,12 @@
     "dateFormat": "Date format",
     "dateFormatAuto": "Automatic",
     "language": "Language",
+    "localization": "Language & Currency",
+    "defaultCurrency": "Default currency",
     "data": "Data",
+    "dataManagement": "Data Management",
     "deleteAllData": "Delete all data",
-    "deleteWarning": "This action is irreversible!",
+    "deleteWarning": "This action is irreversible! All your data will be permanently deleted.",
     "deleteConfirm1": "Are you sure?",
     "deleteConfirm1Desc": "All your data will be permanently deleted.",
     "deleteConfirm2": "Final Confirmation",
@@ -185,10 +196,18 @@
     "deleteConfirm3": "Last Chance",
     "deleteConfirm3Desc": "This is your last chance to cancel. Do you really want to delete everything?",
     "deleteSuccess": "All data has been successfully deleted.",
+    "dataDeleted": "Data deleted successfully",
     "about": "About",
+    "aboutDesc": "Personal finance management app that is 100% offline. Your data never leaves your device.",
     "version": "Version",
     "exportData": "Export Data",
-    "importData": "Import Data"
+    "exportSuccess": "Data exported successfully",
+    "importData": "Import Data",
+    "installApp": "Install App",
+    "installDesc": "Quick access and offline use",
+    "install": "Install",
+    "installSuccess": "App installed successfully!",
+    "saved": "Settings saved"
   },
   "pwa": {
     "installTitle": "Install MFO",

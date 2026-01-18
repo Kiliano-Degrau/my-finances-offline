@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, Account, Transaction, Category } from '@/lib/db';
 import { formatCurrency } from '@/lib/currencies';
-import { Plus, Settings, PiggyBank, WifiOff, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { Plus, PiggyBank, WifiOff, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TransactionSheet from '@/components/TransactionSheet';
-import SettingsSheet from '@/components/SettingsSheet';
 import { TransactionList } from '@/components/TransactionList';
 import { MonthPicker } from '@/components/MonthPicker';
-import Reports from '@/pages/Reports';
 
 export default function Dashboard() {
   const { t } = useI18n();
@@ -21,8 +19,6 @@ export default function Dashboard() {
   const [showFab, setShowFab] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense' | null>(null);
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showReports, setShowReports] = useState(false);
 
   const loadData = async () => {
     const [acc, cats, tx, bal] = await Promise.all([
@@ -53,10 +49,6 @@ export default function Dashboard() {
     setTransactionType(tx.type);
   };
 
-  if (showReports) {
-    return <Reports onBack={() => setShowReports(false)} />;
-  }
-
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
@@ -71,14 +63,6 @@ export default function Dashboard() {
               <h1 className="font-bold text-lg">{t('app.name')}</h1>
               <p className="text-xs text-muted-foreground">{t('app.fullName')}</p>
             </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => setShowReports(true)}>
-              <BarChart3 className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
-              <Settings className="h-5 w-5" />
-            </Button>
           </div>
         </div>
       </header>
@@ -191,9 +175,6 @@ export default function Dashboard() {
         onClose={() => { setTransactionType(null); setEditTransaction(null); }}
         onSave={() => { setTransactionType(null); setEditTransaction(null); loadData(); }}
       />
-
-      {/* Settings Sheet */}
-      <SettingsSheet open={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 }

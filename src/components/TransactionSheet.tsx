@@ -6,8 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/lib/i18n';
 import { 
-  Category, Account, Transaction, 
-  getCategoriesByType, getAccounts, addTransaction, updateTransaction,
+  Category, Account, Transaction, RepeatConfig,
+  getCategoriesByType, getAccounts, addTransaction, addRecurringTransaction, updateTransaction,
   getSettings
 } from '@/lib/db';
 import { NumericKeypad } from '@/components/NumericKeypad';
@@ -44,6 +44,7 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
   const [isFixed, setIsFixed] = useState(false);
   const [isRepeating, setIsRepeating] = useState(false);
   const [repeatTimes, setRepeatTimes] = useState(2);
+  const [repeatPeriod, setRepeatPeriod] = useState<RepeatConfig['period']>('monthly');
   const [observation, setObservation] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -71,6 +72,7 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
       setIsFixed(editTransaction.isFixed);
       setIsRepeating(editTransaction.isRepeating);
       setRepeatTimes(editTransaction.repeatConfig?.times || 2);
+      setRepeatPeriod(editTransaction.repeatConfig?.period || 'monthly');
       setObservation(editTransaction.observation);
       setTags(editTransaction.tags);
       // Load category and account
@@ -132,13 +134,15 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
       completedAt: isCompleted ? new Date().toISOString() : undefined,
       isFixed,
       isRepeating,
-      repeatConfig: isRepeating ? { times: repeatTimes, period: 'monthly' as const } : undefined,
+      repeatConfig: isRepeating ? { times: repeatTimes, period: repeatPeriod } : undefined,
       observation,
       tags,
     };
 
     if (editTransaction) {
       await updateTransaction(editTransaction.id, transactionData);
+    } else if (isRepeating) {
+      await addRecurringTransaction(transactionData);
     } else {
       await addTransaction(transactionData);
     }
@@ -159,6 +163,7 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
     setIsFixed(false);
     setIsRepeating(false);
     setRepeatTimes(2);
+    setRepeatPeriod('monthly');
     setObservation('');
     setTags([]);
     setTagInput('');
@@ -412,16 +417,43 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
                     />
                   </div>
                   {isRepeating && (
-                    <div className="flex items-center gap-2 px-3">
-                      <span className="text-sm text-muted-foreground">{t('transaction.repeatTimes')}:</span>
-                      <Input
-                        type="number"
-                        min={2}
-                        max={60}
-                        value={repeatTimes}
-                        onChange={(e) => setRepeatTimes(Math.max(2, Math.min(60, parseInt(e.target.value) || 2)))}
-                        className="w-20"
-                      />
+                    <div className="space-y-3 px-3 py-2 bg-secondary/30 rounded-lg">
+                      {/* Number of times */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">{t('transaction.repeatTimesLabel')}</span>
+                        <Input
+                          type="number"
+                          min={2}
+                          max={60}
+                          value={repeatTimes}
+                          onChange={(e) => setRepeatTimes(Math.max(2, Math.min(60, parseInt(e.target.value) || 2)))}
+                          className="w-20 text-center"
+                        />
+                      </div>
+                      {/* Period selector */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">{t('transaction.repeatEvery')}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {(['daily', 'weekly', 'monthly', 'yearly'] as const).map(period => (
+                            <button
+                              key={period}
+                              type="button"
+                              onClick={() => setRepeatPeriod(period)}
+                              className={`px-2 py-1 text-xs rounded ${
+                                repeatPeriod === period
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-secondary hover:bg-secondary/80'
+                              }`}
+                            >
+                              {t(`transaction.${period}`)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Preview */}
+                      <p className="text-xs text-muted-foreground italic">
+                        {t('transaction.repeatPreview', { times: repeatTimes, period: t(`transaction.${repeatPeriod}`) })}
+                      </p>
                     </div>
                   )}
                 </div>

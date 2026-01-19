@@ -255,6 +255,61 @@ export async function addTransaction(transaction: Omit<Transaction, 'id' | 'crea
   return newTransaction;
 }
 
+// Add recurring transactions (creates multiple installments)
+export async function addRecurringTransaction(
+  transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Transaction[]> {
+  if (!transaction.isRepeating || !transaction.repeatConfig) {
+    const single = await addTransaction(transaction);
+    return [single];
+  }
+
+  const db = await getDB();
+  const now = new Date().toISOString();
+  const parentId = uuidv4();
+  const { times, period, customDays } = transaction.repeatConfig;
+  const transactions: Transaction[] = [];
+  const baseDate = new Date(transaction.date);
+
+  for (let i = 0; i < times; i++) {
+    const installmentDate = new Date(baseDate);
+    
+    switch (period) {
+      case 'daily':
+        installmentDate.setDate(baseDate.getDate() + i);
+        break;
+      case 'weekly':
+        installmentDate.setDate(baseDate.getDate() + (i * 7));
+        break;
+      case 'monthly':
+        installmentDate.setMonth(baseDate.getMonth() + i);
+        break;
+      case 'yearly':
+        installmentDate.setFullYear(baseDate.getFullYear() + i);
+        break;
+      case 'custom':
+        installmentDate.setDate(baseDate.getDate() + (i * (customDays || 30)));
+        break;
+    }
+
+    const newTransaction: Transaction = {
+      ...transaction,
+      id: uuidv4(),
+      date: installmentDate.toISOString().split('T')[0],
+      parentRepeatId: parentId,
+      repeatIndex: i + 1,
+      repeatTotal: times,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    await db.put('transactions', newTransaction);
+    transactions.push(newTransaction);
+  }
+
+  return transactions;
+}
+
 export async function updateTransaction(id: string, updates: Partial<Transaction>): Promise<Transaction | undefined> {
   const db = await getDB();
   const existing = await db.get('transactions', id);

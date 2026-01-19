@@ -162,6 +162,11 @@ export function TransactionList({
                       </span>
                       {tx.isFixed && <Pin className="h-3 w-3 text-muted-foreground shrink-0" />}
                       {tx.isRepeating && <Repeat className="h-3 w-3 text-muted-foreground shrink-0" />}
+                      {tx.repeatIndex && tx.repeatTotal && (
+                        <span className="text-xs bg-secondary px-1.5 py-0.5 rounded text-muted-foreground shrink-0">
+                          {tx.repeatIndex}/{tx.repeatTotal}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>{category ? getCategoryName(category) : t('category.noCategory')}</span>

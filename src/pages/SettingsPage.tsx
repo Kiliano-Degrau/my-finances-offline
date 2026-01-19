@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { getSettings, updateSettings, deleteAllData, UserSettings } from '@/lib/db';
+import { getSettings, updateSettings, deleteAllData, UserSettings, getDB, Transaction, Category, Account } from '@/lib/db';
 import { currencies } from '@/lib/currencies';
 import { usePWA } from '@/hooks/usePWA';
 import { 
   ChevronLeft, Globe, Palette, DollarSign, Shield, Download, 
-  Trash2, Info, ExternalLink, Moon, Sun, Monitor, Smartphone 
+  Trash2, Info, ExternalLink, Moon, Sun, Monitor, Smartphone, Upload 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,12 +31,25 @@ interface SettingsPageProps {
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
+interface ImportData {
+  version: number;
+  exportedAt: string;
+  transactions: Transaction[];
+  categories: Category[];
+  accounts: Account[];
+  settings?: UserSettings;
+}
+
 export default function SettingsPage({ onBack }: SettingsPageProps) {
   const { t, language, setLanguage, availableLanguages } = useI18n();
   const { canInstall, isInstalled, install } = usePWA();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [theme, setThemeState] = useState<ThemeMode>('system');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importData, setImportData] = useState<ImportData | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadSettings();
@@ -93,8 +106,8 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const handleExportData = async () => {
     try {
       const db = await import('@/lib/db');
-      const [transactions, categories, accounts, settings] = await Promise.all([
-        db.getTransactionsByMonth(new Date().getFullYear(), new Date().getMonth()),
+      const allTransactions = await db.getTransactions();
+      const [categories, accounts, settings] = await Promise.all([
         db.getCategories(),
         db.getAccounts(),
         db.getSettings(),
@@ -103,7 +116,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       const exportData = {
         version: 1,
         exportedAt: new Date().toISOString(),
-        transactions,
+        transactions: allTransactions,
         categories,
         accounts,
         settings,
@@ -119,7 +132,87 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       
       toast.success(t('settings.exportSuccess'));
     } catch (error) {
-      toast.error(t('common.error'));
+      toast.error(t('errors.generic'));
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string) as ImportData;
+        
+        // Validate format
+        if (!data.version || !data.transactions || !Array.isArray(data.transactions)) {
+          toast.error(t('import.invalidFormat'));
+          return;
+        }
+        
+        setImportData(data);
+        setShowImportDialog(true);
+      } catch (error) {
+        toast.error(t('import.invalidFormat'));
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImportData = async () => {
+    if (!importData) return;
+    
+    setIsImporting(true);
+    try {
+      const db = await getDB();
+      
+      // Import categories (avoiding duplicates by checking name + type)
+      const existingCategories = await db.getAll('categories');
+      const existingCatKeys = new Set(existingCategories.map(c => `${c.type}-${c.name}`));
+      
+      for (const cat of importData.categories) {
+        const key = `${cat.type}-${cat.name}`;
+        if (!existingCatKeys.has(key)) {
+          await db.put('categories', cat);
+        }
+      }
+      
+      // Import accounts (avoiding duplicates by name)
+      const existingAccounts = await db.getAll('accounts');
+      const existingAccNames = new Set(existingAccounts.map(a => a.name));
+      
+      for (const acc of importData.accounts) {
+        if (!existingAccNames.has(acc.name)) {
+          await db.put('accounts', acc);
+        }
+      }
+      
+      // Import transactions (avoid exact duplicates by ID)
+      const existingTransactions = await db.getAll('transactions');
+      const existingTxIds = new Set(existingTransactions.map(t => t.id));
+      
+      for (const tx of importData.transactions) {
+        if (!existingTxIds.has(tx.id)) {
+          await db.put('transactions', tx);
+        }
+      }
+      
+      setShowImportDialog(false);
+      setImportData(null);
+      toast.success(t('import.success'));
+      
+      // Reload page to reflect changes
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      toast.error(t('import.error'));
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -273,6 +366,23 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
               {t('settings.exportData')}
             </Button>
             
+            <div className="relative">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleFileSelect}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+              <Button 
+                variant="outline" 
+                className="w-full justify-start pointer-events-none"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {t('settings.importData')}
+              </Button>
+            </div>
+            
             <Button 
               variant="destructive" 
               className="w-full justify-start"
@@ -316,6 +426,34 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Import Confirmation Dialog */}
+      <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('import.confirmImport')}</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>{t('import.confirmMessage')}</p>
+              {importData && (
+                <div className="bg-secondary/50 rounded-lg p-3 mt-3 space-y-1 text-sm">
+                  <p>{t('import.transactionsCount', { count: importData.transactions.length })}</p>
+                  <p>{t('import.categoriesCount', { count: importData.categories.length })}</p>
+                  <p>{t('import.accountsCount', { count: importData.accounts.length })}</p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isImporting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleImportData}
+              disabled={isImporting}
+            >
+              {isImporting ? t('import.importing') : t('common.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

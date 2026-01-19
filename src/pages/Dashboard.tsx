@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, Account, Transaction, Category } from '@/lib/db';
 import { formatCurrency } from '@/lib/currencies';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TransactionSheet from '@/components/TransactionSheet';
 import { TransactionList } from '@/components/TransactionList';
 import { MonthPicker } from '@/components/MonthPicker';
+import { TransactionFilters, TransactionFiltersState, defaultFilters, filterTransactions } from '@/components/TransactionFilters';
 
 export default function Dashboard() {
   const { t } = useI18n();
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [showFab, setShowFab] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense' | null>(null);
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
+  const [filters, setFilters] = useState<TransactionFiltersState>(defaultFilters);
 
   const loadData = async () => {
     const [acc, cats, tx, bal] = await Promise.all([
@@ -36,6 +38,11 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
   }, [currentDate]);
+
+  // Apply filters
+  const filteredTransactions = useMemo(() => {
+    return filterTransactions(transactions, filters);
+  }, [transactions, filters]);
 
   const incomes = transactions.filter(tx => tx.type === 'income');
   const expenses = transactions.filter(tx => tx.type === 'expense');
@@ -130,9 +137,17 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Filters */}
+        <TransactionFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          categories={categories}
+          accounts={accounts}
+        />
+
         {/* Transactions List */}
         <TransactionList
-          transactions={transactions}
+          transactions={filteredTransactions}
           categories={categories}
           accounts={accounts}
           onTransactionClick={handleTransactionClick}

@@ -268,5 +268,26 @@
     "invalidValue": "Valor inválido",
     "minLength": "Mínimo de {min} caracteres",
     "maxLength": "Máximo de {max} caracteres"
+  },
+  "filters": {
+    "title": "Filtros",
+    "clearAll": "Limpar tudo",
+    "transactionType": "Tipo de transação",
+    "status": "Status",
+    "completed": "Concluído",
+    "noResults": "Nenhuma transação encontrada"
+  },
+  "import": {
+    "title": "Importar Dados",
+    "selectFile": "Selecionar arquivo",
+    "importing": "Importando...",
+    "success": "Dados importados com sucesso!",
+    "error": "Erro ao importar dados",
+    "invalidFormat": "Formato de arquivo inválido",
+    "confirmImport": "Confirmar Importação",
+    "confirmMessage": "Isso irá adicionar os dados do backup ao seu app. Deseja continuar?",
+    "transactionsCount": "{count} transações",
+    "categoriesCount": "{count} categorias",
+    "accountsCount": "{count} contas"
   }
 }

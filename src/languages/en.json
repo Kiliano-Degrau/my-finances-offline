@@ -268,5 +268,26 @@
     "invalidValue": "Invalid value",
     "minLength": "Minimum {min} characters",
     "maxLength": "Maximum {max} characters"
+  },
+  "filters": {
+    "title": "Filters",
+    "clearAll": "Clear all",
+    "transactionType": "Transaction type",
+    "status": "Status",
+    "completed": "Completed",
+    "noResults": "No transactions found"
+  },
+  "import": {
+    "title": "Import Data",
+    "selectFile": "Select file",
+    "importing": "Importing...",
+    "success": "Data imported successfully!",
+    "error": "Error importing data",
+    "invalidFormat": "Invalid file format",
+    "confirmImport": "Confirm Import",
+    "confirmMessage": "This will add the backup data to your app. Do you want to continue?",
+    "transactionsCount": "{count} transactions",
+    "categoriesCount": "{count} categories",
+    "accountsCount": "{count} accounts"
   }
 }

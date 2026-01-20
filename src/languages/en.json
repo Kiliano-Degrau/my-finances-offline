@@ -76,7 +76,15 @@
     "registerExpense": "Register Expense",
     "updateIncome": "Update Income",
     "updateExpense": "Update Expense",
-    "repetition": "Repetition"
+    "repetition": "Repetition",
+    "deleteThis": "Delete this",
+    "deleteAll": "Delete all",
+    "deleteConfirm": "Are you sure?",
+    "deleteConfirmSingle": "This transaction will be permanently deleted.",
+    "deleteConfirmAll": "All {count} installments of this recurring transaction will be deleted.",
+    "amount": "Amount",
+    "currency": "Currency",
+    "addTag": "Add tag"
   },
   "category": {
     "title": "Categories",

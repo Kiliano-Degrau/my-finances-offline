@@ -76,7 +76,15 @@
     "registerExpense": "Cadastrar Despesa",
     "updateIncome": "Atualizar Receita",
     "updateExpense": "Atualizar Despesa",
-    "repetition": "Repetição"
+    "repetition": "Repetição",
+    "deleteThis": "Excluir esta",
+    "deleteAll": "Excluir todas",
+    "deleteConfirm": "Tem certeza?",
+    "deleteConfirmSingle": "Esta transação será excluída permanentemente.",
+    "deleteConfirmAll": "Todas as {count} parcelas desta transação recorrente serão excluídas.",
+    "amount": "Valor",
+    "currency": "Moeda",
+    "addTag": "Adicionar tag"
   },
   "category": {
     "title": "Categorias",

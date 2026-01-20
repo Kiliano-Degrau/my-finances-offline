@@ -329,6 +329,16 @@ export async function deleteTransaction(id: string): Promise<void> {
   await db.delete('transactions', id);
 }
 
+// Delete all transactions in a recurring group
+export async function deleteRecurringTransactions(parentRepeatId: string): Promise<void> {
+  const db = await getDB();
+  const all = await db.getAll('transactions');
+  const toDelete = all.filter(tx => tx.parentRepeatId === parentRepeatId);
+  for (const tx of toDelete) {
+    await db.delete('transactions', tx.id);
+  }
+}
+
 export async function getTransactions(): Promise<Transaction[]> {
   const db = await getDB();
   return db.getAll('transactions');

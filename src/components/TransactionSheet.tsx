@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { 
   Category, Account, Transaction, RepeatConfig,
   getCategoriesByType, getAccounts, addTransaction, addRecurringTransaction, updateTransaction,
+  deleteTransaction, deleteRecurringTransactions,
   getSettings
 } from '@/lib/db';
 import { NumericKeypad } from '@/components/NumericKeypad';
@@ -17,8 +18,18 @@ import { currencies, formatCurrency, getCurrencySymbol } from '@/lib/currencies'
 import * as LucideIcons from 'lucide-react';
 import { 
   Calendar, ChevronRight, Check, X, Tag, 
-  Repeat, Pin, MessageSquare, Hash 
+  Repeat, Pin, MessageSquare, Hash, Trash2, AlertTriangle
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface TransactionSheetProps {
   type: 'income' | 'expense' | null;
@@ -53,6 +64,8 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<'single' | 'all'>('single');
 
   // Load defaults
   useEffect(() => {
@@ -167,7 +180,27 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
     setObservation('');
     setTags([]);
     setTagInput('');
+    setShowDeleteDialog(false);
+    setDeleteMode('single');
     onClose();
+  };
+
+  const handleDelete = async () => {
+    if (!editTransaction) return;
+    
+    if (deleteMode === 'all' && editTransaction.parentRepeatId) {
+      await deleteRecurringTransactions(editTransaction.parentRepeatId);
+    } else {
+      await deleteTransaction(editTransaction.id);
+    }
+    
+    handleClose();
+    onSave();
+  };
+
+  const openDeleteDialog = (mode: 'single' | 'all') => {
+    setDeleteMode(mode);
+    setShowDeleteDialog(true);
   };
 
   const setDateToday = () => {
@@ -508,8 +541,33 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
                 </div>
               </div>
 
-              {/* Save button */}
-              <div className="p-4 border-t border-border safe-bottom">
+              {/* Action buttons */}
+              <div className="p-4 border-t border-border safe-bottom space-y-2">
+                {/* Delete button - only show when editing */}
+                {editTransaction && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      className="flex-1 h-12"
+                      onClick={() => openDeleteDialog('single')}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {t('transaction.deleteThis')}
+                    </Button>
+                    {editTransaction.parentRepeatId && (
+                      <Button
+                        variant="outline"
+                        className="flex-1 h-12 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={() => openDeleteDialog('all')}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {t('transaction.deleteAll')}
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
+                {/* Save button */}
                 <Button
                   className={`w-full h-14 ${isIncome ? 'bg-income hover:bg-income/90' : 'bg-expense hover:bg-expense/90'}`}
                   onClick={handleSave}
@@ -540,6 +598,33 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
         selectedId={account?.id || ''}
         onSelect={setAccount}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {t('transaction.deleteConfirm')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteMode === 'all' 
+                ? t('transaction.deleteConfirmAll', { count: editTransaction?.repeatTotal || 0 })
+                : t('transaction.deleteConfirmSingle')
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDelete}
+            >
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -1,16 +1,18 @@
 import React, { useMemo } from 'react';
-import { Transaction, Category, Account } from '@/lib/db';
+import { Transaction, Category, Account, updateTransaction } from '@/lib/db';
 import { formatCurrency } from '@/lib/currencies';
 import { useI18n } from '@/lib/i18n';
 import * as LucideIcons from 'lucide-react';
 import { Check, Clock, Pin, Repeat, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface TransactionListProps {
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];
   onTransactionClick?: (transaction: Transaction) => void;
+  onTransactionUpdate?: () => void;
 }
 
 interface GroupedTransactions {
@@ -25,7 +27,8 @@ export function TransactionList({
   transactions, 
   categories, 
   accounts,
-  onTransactionClick 
+  onTransactionClick,
+  onTransactionUpdate
 }: TransactionListProps) {
   const { t } = useI18n();
 
@@ -100,6 +103,17 @@ export function TransactionList({
       return t('account.defaultAccount');
     }
     return acc.name;
+  };
+
+  const handleToggleStatus = async (e: React.MouseEvent, tx: Transaction) => {
+    e.stopPropagation();
+    const newStatus = !tx.isCompleted;
+    await updateTransaction(tx.id, {
+      isCompleted: newStatus,
+      completedAt: newStatus ? new Date().toISOString() : undefined,
+    });
+    toast.success(newStatus ? t('transaction.paid') : t('transaction.pending'));
+    onTransactionUpdate?.();
   };
 
   if (transactions.length === 0) {
@@ -183,7 +197,10 @@ export function TransactionList({
                     )}>
                       {isIncome ? '+' : '-'}{formatCurrency(tx.value, tx.currency)}
                     </div>
-                    <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                    <button
+                      onClick={(e) => handleToggleStatus(e, tx)}
+                      className="flex items-center justify-end gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       {tx.isCompleted ? (
                         <>
                           <Check className="h-3 w-3 text-income" />
@@ -195,7 +212,7 @@ export function TransactionList({
                           <span>{t('transaction.pending')}</span>
                         </>
                       )}
-                    </div>
+                    </button>
                   </div>
 
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />

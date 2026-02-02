@@ -5,7 +5,8 @@ import { currencies } from '@/lib/currencies';
 import { usePWA } from '@/hooks/usePWA';
 import { 
   ChevronLeft, Globe, Palette, DollarSign, Shield, Download, 
-  Trash2, Info, ExternalLink, Moon, Sun, Monitor, Smartphone, Upload 
+  Trash2, Info, ExternalLink, Moon, Sun, Monitor, Smartphone, Upload,
+  Tag, Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,6 +25,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import CategoryManagement from '@/components/CategoryManagement';
+import AccountManagement from '@/components/AccountManagement';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -47,6 +50,8 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [theme, setThemeState] = useState<ThemeMode>('system');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showCategoryManagement, setShowCategoryManagement] = useState(false);
+  const [showAccountManagement, setShowAccountManagement] = useState(false);
   const [importData, setImportData] = useState<ImportData | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -326,6 +331,35 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           </CardContent>
         </Card>
 
+        {/* Categories & Accounts */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              {t('category.title')} & {t('account.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => setShowCategoryManagement(true)}
+            >
+              <Tag className="h-4 w-4 mr-2" />
+              {t('category.title')}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => setShowAccountManagement(true)}
+            >
+              <Wallet className="h-4 w-4 mr-2" />
+              {t('account.title')}
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Install App */}
         {canInstall && !isInstalled && (
           <Card className="border-primary/50 bg-primary/5">
@@ -458,6 +492,19 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Category Management */}
+      <CategoryManagement
+        open={showCategoryManagement}
+        onClose={() => setShowCategoryManagement(false)}
+      />
+
+      {/* Account Management */}
+      <AccountManagement
+        open={showAccountManagement}
+        onClose={() => setShowAccountManagement(false)}
+        defaultCurrency={settings?.defaultCurrency}
+      />
     </div>
   );
 }

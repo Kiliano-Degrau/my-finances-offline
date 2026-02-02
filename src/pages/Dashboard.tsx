@@ -151,6 +151,7 @@ export default function Dashboard() {
           categories={categories}
           accounts={accounts}
           onTransactionClick={handleTransactionClick}
+          onTransactionUpdate={loadData}
         />
       </main>
 

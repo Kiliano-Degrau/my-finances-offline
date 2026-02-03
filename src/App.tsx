@@ -61,11 +61,11 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <I18nProvider>
+    <I18nProvider>
+      <ThemeProvider>
         <AppContent />
         <Toaster />
-      </I18nProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }

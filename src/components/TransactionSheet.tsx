@@ -272,76 +272,85 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
             />
           ) : (
             <div className="flex-1 overflow-auto">
-              {/* Amount display - tap to edit */}
-              <button
-                onClick={() => setStep('amount')}
-                className="w-full p-4 bg-secondary/30 flex items-center justify-between"
-              >
-                <span className="text-muted-foreground">{t('transaction.amount')}</span>
-                <span className={`text-2xl font-bold ${isIncome ? 'text-income' : 'text-expense'}`}>
-                  {formatCurrency(value, currency)}
-                </span>
-              </button>
+              {/* Amount display with currency - tap to edit */}
+              <div className="p-4 bg-secondary/30 flex items-center gap-3">
+                <button
+                  onClick={() => setStep('amount')}
+                  className="flex-1 text-left"
+                >
+                  <span className={`text-3xl font-bold ${isIncome ? 'text-income' : 'text-expense'}`}>
+                    {formatCurrency(value, currency)}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
+                  className="px-3 py-2 bg-secondary rounded-lg text-sm font-medium flex items-center gap-1"
+                >
+                  {currencyData?.symbol} {currency}
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                </button>
+              </div>
+
+              {showCurrencyPicker && (
+                <div className="mx-4 mt-2 max-h-48 overflow-auto bg-secondary/30 rounded-lg p-2 grid grid-cols-3 gap-2">
+                  {currencies.map(c => (
+                    <button
+                      key={c.code}
+                      onClick={() => {
+                        setCurrency(c.code);
+                        setShowCurrencyPicker(false);
+                      }}
+                      className={`p-2 rounded text-sm ${
+                        currency === c.code 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-secondary'
+                      }`}
+                    >
+                      {c.symbol} {c.code}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Form fields */}
               <div className="p-4 space-y-4">
-                {/* Currency selector */}
-                <button
-                  onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
-                  className="w-full flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
-                >
-                  <span className="text-muted-foreground">{t('transaction.currency')}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{currencyData?.symbol} {currency}</span>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                </button>
-
-                {showCurrencyPicker && (
-                  <div className="max-h-48 overflow-auto bg-secondary/30 rounded-lg p-2 grid grid-cols-3 gap-2">
-                    {currencies.map(c => (
-                      <button
-                        key={c.code}
-                        onClick={() => {
-                          setCurrency(c.code);
-                          setShowCurrencyPicker(false);
-                        }}
-                        className={`p-2 rounded text-sm ${
-                          currency === c.code 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'hover:bg-secondary'
-                        }`}
-                      >
-                        {c.symbol} {c.code}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Completed toggle */}
-                <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                  <span className="text-muted-foreground">
-                    {isIncome ? t('transaction.received') : t('transaction.paid')}
-                  </span>
-                  <Switch
-                    checked={isCompleted}
-                    onCheckedChange={setIsCompleted}
+                {/* Title (formerly Description) - right after value */}
+                <div>
+                  <Input
+                    placeholder={t('transaction.titlePlaceholder')}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    maxLength={100}
+                    className="text-lg"
                   />
                 </div>
 
-                {/* Date */}
+                {/* Date with Status toggle inline */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{t('transaction.date')}</span>
+                  <div className="flex items-center gap-2">
+                    {/* Date field */}
+                    <div className="flex-1 flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">{t('transaction.date')}</span>
+                      </div>
+                      <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="bg-transparent border-none text-right font-medium focus:outline-none"
+                      />
                     </div>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="bg-transparent border-none text-right font-medium focus:outline-none"
-                    />
+                    {/* Status toggle - compact */}
+                    <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {isIncome ? t('transaction.received') : t('transaction.paid')}
+                      </span>
+                      <Switch
+                        checked={isCompleted}
+                        onCheckedChange={setIsCompleted}
+                      />
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -361,19 +370,6 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
                       {t('transaction.yesterday')}
                     </Button>
                   </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <Input
-                    placeholder={t('transaction.description')}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    maxLength={400}
-                  />
-                  <p className="text-xs text-muted-foreground text-right mt-1">
-                    {description.length}/400
-                  </p>
                 </div>
 
                 {/* Category */}
@@ -426,16 +422,23 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
                   </div>
                 </button>
 
-                {/* Fixed toggle */}
-                <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Pin className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{t('transaction.fixed')}</span>
+                {/* Fixed toggle with hint */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Pin className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{t('transaction.fixed')}</span>
+                    </div>
+                    <Switch
+                      checked={isFixed}
+                      onCheckedChange={setIsFixed}
+                    />
                   </div>
-                  <Switch
-                    checked={isFixed}
-                    onCheckedChange={setIsFixed}
-                  />
+                  {isFixed && (
+                    <p className="text-xs text-muted-foreground italic px-3">
+                      {t('transaction.fixedHint')}
+                    </p>
+                  )}
                 </div>
 
                 {/* Repeat toggle */}

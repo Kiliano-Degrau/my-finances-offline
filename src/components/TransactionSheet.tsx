@@ -44,7 +44,7 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
   const { t } = useI18n();
   
   // Form state
-  const [step, setStep] = useState<Step>('amount');
+  const [step, setStep] = useState<Step>(editTransaction ? 'details' : 'amount');
   const [value, setValue] = useState(0);
   const [currency, setCurrency] = useState('BRL');
   const [isCompleted, setIsCompleted] = useState(true);
@@ -77,6 +77,7 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
   // Load edit transaction data
   useEffect(() => {
     if (editTransaction) {
+      setStep('details'); // Always go to details when editing
       setValue(editTransaction.value);
       setCurrency(editTransaction.currency);
       setIsCompleted(editTransaction.isCompleted);

@@ -156,7 +156,7 @@ export default function Dashboard() {
       </main>
 
       {/* FAB */}
-      <div className="fixed right-4 bottom-6 safe-bottom z-50">
+      <div className="fixed right-4 bottom-24 z-50">
         {showFab && (
           <div className="absolute bottom-16 right-0 flex flex-col gap-2 animate-fade-in">
             <Button

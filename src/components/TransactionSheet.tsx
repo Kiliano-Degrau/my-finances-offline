@@ -266,7 +266,7 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
             <NumericKeypad
               value={value}
               onConfirm={handleAmountConfirm}
-              onCancel={handleClose}
+              onCancel={editTransaction ? () => setStep('details') : handleClose}
               currency={currency}
               currencySymbol={currencyData?.symbol || currency}
             />

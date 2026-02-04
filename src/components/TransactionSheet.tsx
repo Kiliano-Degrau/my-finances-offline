@@ -314,43 +314,39 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
 
               {/* Form fields */}
               <div className="p-4 space-y-4">
-                {/* Title (formerly Description) - right after value */}
-                <div>
+                {/* Title with Status toggle inline */}
+                <div className="flex items-center gap-2">
                   <Input
                     placeholder={t('transaction.titlePlaceholder')}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     maxLength={100}
-                    className="text-lg"
+                    className="text-lg flex-1"
                   />
+                  <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg shrink-0">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {isIncome ? t('transaction.received') : t('transaction.paid')}
+                    </span>
+                    <Switch
+                      checked={isCompleted}
+                      onCheckedChange={setIsCompleted}
+                    />
+                  </div>
                 </div>
 
-                {/* Date with Status toggle inline */}
+                {/* Date */}
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    {/* Date field */}
-                    <div className="flex-1 flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{t('transaction.date')}</span>
-                      </div>
-                      <input
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="bg-transparent border-none text-right font-medium focus:outline-none"
-                      />
+                  <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{t('transaction.date')}</span>
                     </div>
-                    {/* Status toggle - compact */}
-                    <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {isIncome ? t('transaction.received') : t('transaction.paid')}
-                      </span>
-                      <Switch
-                        checked={isCompleted}
-                        onCheckedChange={setIsCompleted}
-                      />
-                    </div>
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="bg-transparent border-none text-right font-medium focus:outline-none"
+                    />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -545,41 +541,53 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
                 </div>
               </div>
 
+              {/* Delete link - only show when editing, after tags */}
+              {editTransaction && (
+                <div className="px-4 pb-2">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => openDeleteDialog('single')}
+                      className="flex items-center gap-1 text-sm text-destructive hover:text-destructive/80 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {isIncome ? t('transaction.deleteIncome') : t('transaction.deleteExpense')}
+                    </button>
+                  </div>
+                  {editTransaction.parentRepeatId && (
+                    <div className="flex justify-end mt-1">
+                      <button
+                        onClick={() => openDeleteDialog('all')}
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        {t('transaction.deleteAll')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Action buttons */}
               <div className="p-4 border-t border-border safe-bottom space-y-2">
-                {/* Delete button - only show when editing */}
-                {editTransaction && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="destructive"
-                      className="flex-1 h-12"
-                      onClick={() => openDeleteDialog('single')}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      {t('transaction.deleteThis')}
-                    </Button>
-                    {editTransaction.parentRepeatId && (
-                      <Button
-                        variant="outline"
-                        className="flex-1 h-12 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={() => openDeleteDialog('all')}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        {t('transaction.deleteAll')}
-                      </Button>
-                    )}
-                  </div>
-                )}
-                
-                {/* Save button */}
-                <Button
-                  className={`w-full h-14 ${isIncome ? 'bg-income hover:bg-income/90' : 'bg-expense hover:bg-expense/90'}`}
-                  onClick={handleSave}
-                  disabled={!value || !category || !account}
-                >
-                  <Check className="w-5 h-5 mr-2" />
-                  {t('common.save')}
-                </Button>
+                {/* Cancel / Save buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-14"
+                    onClick={handleClose}
+                  >
+                    <X className="w-5 h-5 mr-2" />
+                    {t('common.cancel')}
+                  </Button>
+                  <Button
+                    className={`flex-1 h-14 ${isIncome ? 'bg-income hover:bg-income/90' : 'bg-expense hover:bg-expense/90'}`}
+                    onClick={handleSave}
+                    disabled={!value || !category || !account}
+                  >
+                    <Check className="w-5 h-5 mr-2" />
+                    {t('common.save')}
+                  </Button>
+                </div>
               </div>
             </div>
           )}

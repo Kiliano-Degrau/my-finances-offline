@@ -84,6 +84,8 @@
     "repetition": "Repetition",
     "deleteThis": "Delete this",
     "deleteAll": "Delete all",
+    "deleteIncome": "Delete income",
+    "deleteExpense": "Delete expense",
     "deleteConfirm": "Are you sure?",
     "deleteConfirmSingle": "This transaction will be permanently deleted.",
     "deleteConfirmAll": "All {count} installments of this recurring transaction will be deleted.",

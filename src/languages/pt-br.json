@@ -84,6 +84,8 @@
     "repetition": "Repetição",
     "deleteThis": "Excluir esta",
     "deleteAll": "Excluir todas",
+    "deleteIncome": "Excluir receita",
+    "deleteExpense": "Excluir despesa",
     "deleteConfirm": "Tem certeza?",
     "deleteConfirmSingle": "Esta transação será excluída permanentemente.",
     "deleteConfirmAll": "Todas as {count} parcelas desta transação recorrente serão excluídas.",

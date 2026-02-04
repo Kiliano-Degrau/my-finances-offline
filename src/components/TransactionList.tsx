@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
-import { Transaction, Category, Account, updateTransaction } from '@/lib/db';
+import { Transaction, Category, Account } from '@/lib/db';
 import { formatCurrency } from '@/lib/currencies';
 import { useI18n } from '@/lib/i18n';
 import * as LucideIcons from 'lucide-react';
 import { Check, Clock, Pin, Repeat, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -105,16 +104,6 @@ export function TransactionList({
     return acc.name;
   };
 
-  const handleToggleStatus = async (e: React.MouseEvent, tx: Transaction) => {
-    e.stopPropagation();
-    const newStatus = !tx.isCompleted;
-    await updateTransaction(tx.id, {
-      isCompleted: newStatus,
-      completedAt: newStatus ? new Date().toISOString() : undefined,
-    });
-    toast.success(newStatus ? t('transaction.paid') : t('transaction.pending'));
-    onTransactionUpdate?.();
-  };
 
   if (transactions.length === 0) {
     return (
@@ -189,7 +178,7 @@ export function TransactionList({
                     </div>
                   </div>
 
-                  {/* Amount & status */}
+                  {/* Amount & status - display only, no interaction */}
                   <div className="text-right shrink-0">
                     <div className={cn(
                       'font-semibold tabular-nums',
@@ -197,10 +186,7 @@ export function TransactionList({
                     )}>
                       {isIncome ? '+' : '-'}{formatCurrency(tx.value, tx.currency)}
                     </div>
-                    <button
-                      onClick={(e) => handleToggleStatus(e, tx)}
-                      className="flex items-center justify-end gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
                       {tx.isCompleted ? (
                         <>
                           <Check className="h-3 w-3 text-income" />
@@ -212,7 +198,7 @@ export function TransactionList({
                           <span>{t('transaction.pending')}</span>
                         </>
                       )}
-                    </button>
+                    </div>
                   </div>
 
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />

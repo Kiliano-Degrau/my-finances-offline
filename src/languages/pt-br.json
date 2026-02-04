@@ -89,6 +89,10 @@
     "deleteConfirm": "Tem certeza?",
     "deleteConfirmSingle": "Esta transação será excluída permanentemente.",
     "deleteConfirmAll": "Todas as {count} parcelas desta transação recorrente serão excluídas.",
+    "deleteOnlyThis": "Excluir apenas esta parcela",
+    "deleteAllPending": "Excluir todas as parcelas pendentes",
+    "deleteAllPendingDesc": "Apenas as parcelas ainda não pagas serão excluídas.",
+    "chooseDeleteOption": "Esta é uma transação parcelada. O que você deseja fazer?",
     "amount": "Valor",
     "currency": "Moeda",
     "addTag": "Adicionar tag"

@@ -65,6 +65,7 @@ export interface UserSettings {
   language: string;
   defaultCurrency: string;
   firstLaunchLang: string;
+  processedFixedMonths: string[]; // Track which months have had fixed transactions generated
   createdAt: string;
   updatedAt: string;
 }
@@ -201,6 +202,7 @@ export async function initializeDB(): Promise<void> {
     language: userLang,
     defaultCurrency: detectUserCurrency(),
     firstLaunchLang: userLang,
+    processedFixedMonths: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -337,6 +339,17 @@ export async function deleteRecurringTransactions(parentRepeatId: string): Promi
   for (const tx of toDelete) {
     await db.delete('transactions', tx.id);
   }
+}
+
+// Delete only pending (not completed) transactions in a recurring group
+export async function deletePendingRecurringTransactions(parentRepeatId: string): Promise<number> {
+  const db = await getDB();
+  const all = await db.getAll('transactions');
+  const toDelete = all.filter(tx => tx.parentRepeatId === parentRepeatId && !tx.isCompleted);
+  for (const tx of toDelete) {
+    await db.delete('transactions', tx.id);
+  }
+  return toDelete.length;
 }
 
 export async function getTransactions(): Promise<Transaction[]> {

@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { 
   Category, Account, Transaction, RepeatConfig,
   getCategoriesByType, getAccounts, addTransaction, addRecurringTransaction, updateTransaction,
-  deleteTransaction, deleteRecurringTransactions,
+  deleteTransaction, deleteRecurringTransactions, deletePendingRecurringTransactions,
   getSettings
 } from '@/lib/db';
 import { NumericKeypad } from '@/components/NumericKeypad';
@@ -65,7 +65,8 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
   const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteMode, setDeleteMode] = useState<'single' | 'all'>('single');
+  const [showDeleteOptionsDialog, setShowDeleteOptionsDialog] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<'single' | 'pending'>('single');
 
   // Load defaults
   useEffect(() => {
@@ -182,6 +183,7 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
     setTags([]);
     setTagInput('');
     setShowDeleteDialog(false);
+    setShowDeleteOptionsDialog(false);
     setDeleteMode('single');
     onClose();
   };
@@ -189,8 +191,8 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
   const handleDelete = async () => {
     if (!editTransaction) return;
     
-    if (deleteMode === 'all' && editTransaction.parentRepeatId) {
-      await deleteRecurringTransactions(editTransaction.parentRepeatId);
+    if (deleteMode === 'pending' && editTransaction.parentRepeatId) {
+      await deletePendingRecurringTransactions(editTransaction.parentRepeatId);
     } else {
       await deleteTransaction(editTransaction.id);
     }
@@ -199,8 +201,20 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
     onSave();
   };
 
-  const openDeleteDialog = (mode: 'single' | 'all') => {
+  const openDeleteFlow = () => {
+    // If it's a recurring transaction, show options dialog first
+    if (editTransaction?.parentRepeatId) {
+      setShowDeleteOptionsDialog(true);
+    } else {
+      // For regular transactions, go directly to confirmation
+      setDeleteMode('single');
+      setShowDeleteDialog(true);
+    }
+  };
+
+  const selectDeleteOption = (mode: 'single' | 'pending') => {
     setDeleteMode(mode);
+    setShowDeleteOptionsDialog(false);
     setShowDeleteDialog(true);
   };
 
@@ -546,24 +560,13 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
                 <div className="px-4 pb-2">
                   <div className="flex justify-end">
                     <button
-                      onClick={() => openDeleteDialog('single')}
+                      onClick={openDeleteFlow}
                       className="flex items-center gap-1 text-sm text-destructive hover:text-destructive/80 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                       {isIncome ? t('transaction.deleteIncome') : t('transaction.deleteExpense')}
                     </button>
                   </div>
-                  {editTransaction.parentRepeatId && (
-                    <div className="flex justify-end mt-1">
-                      <button
-                        onClick={() => openDeleteDialog('all')}
-                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        {t('transaction.deleteAll')}
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -611,6 +614,45 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
         onSelect={setAccount}
       />
 
+      {/* Delete Options Dialog - for recurring transactions */}
+      <AlertDialog open={showDeleteOptionsDialog} onOpenChange={setShowDeleteOptionsDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              {isIncome ? t('transaction.deleteIncome') : t('transaction.deleteExpense')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('transaction.chooseDeleteOption')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-4">
+            <Button
+              variant="outline"
+              className="w-full justify-start h-auto py-3"
+              onClick={() => selectDeleteOption('single')}
+            >
+              <div className="text-left">
+                <div className="font-medium">{t('transaction.deleteOnlyThis')}</div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start h-auto py-3"
+              onClick={() => selectDeleteOption('pending')}
+            >
+              <div className="text-left">
+                <div className="font-medium">{t('transaction.deleteAllPending')}</div>
+                <div className="text-xs text-muted-foreground">{t('transaction.deleteAllPendingDesc')}</div>
+              </div>
+            </Button>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
@@ -620,8 +662,8 @@ export default function TransactionSheet({ type, onClose, onSave, editTransactio
               {t('transaction.deleteConfirm')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteMode === 'all' 
-                ? t('transaction.deleteConfirmAll', { count: editTransaction?.repeatTotal || 0 })
+              {deleteMode === 'pending' 
+                ? t('transaction.deleteAllPendingDesc')
                 : t('transaction.deleteConfirmSingle')
               }
             </AlertDialogDescription>

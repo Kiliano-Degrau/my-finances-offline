@@ -89,6 +89,10 @@
     "deleteConfirm": "Are you sure?",
     "deleteConfirmSingle": "This transaction will be permanently deleted.",
     "deleteConfirmAll": "All {count} installments of this recurring transaction will be deleted.",
+    "deleteOnlyThis": "Delete only this installment",
+    "deleteAllPending": "Delete all pending installments",
+    "deleteAllPendingDesc": "Only unpaid installments will be deleted.",
+    "chooseDeleteOption": "This is a recurring transaction. What would you like to do?",
     "amount": "Amount",
     "currency": "Currency",
     "addTag": "Add tag"

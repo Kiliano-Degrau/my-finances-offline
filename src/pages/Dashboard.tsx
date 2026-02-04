@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, Account, Transaction, Category } from '@/lib/db';
+import { generateFixedTransactionsForMonth } from '@/lib/fixedTransactions';
 import { formatCurrency } from '@/lib/currencies';
 import { Plus, PiggyBank, WifiOff, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,9 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<TransactionFiltersState>(defaultFilters);
 
   const loadData = async () => {
+    // First, generate fixed transactions for the selected month if not already done
+    await generateFixedTransactionsForMonth(currentDate.getFullYear(), currentDate.getMonth());
+    
     const [acc, cats, tx, bal] = await Promise.all([
       getAccounts(),
       getCategories(),

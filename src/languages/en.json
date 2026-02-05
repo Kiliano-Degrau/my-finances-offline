@@ -311,5 +311,17 @@
     "transactionsCount": "{count} transactions",
     "categoriesCount": "{count} categories",
     "accountsCount": "{count} accounts"
+  },
+  "budget": {
+    "title": "Spending Goals",
+    "addBudget": "Set Goal",
+    "editBudget": "Edit Goal",
+    "monthlyLimit": "Monthly limit",
+    "noBudgets": "Set goals to track your spending by category",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "exceeded": "Exceeded",
+    "onTrack": "On track",
+    "warning": "Warning"
   }
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, Account, Transaction, Category } from '@/lib/db';
+import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, getSettings, Account, Transaction, Category } from '@/lib/db';
 import { generateFixedTransactionsForMonth } from '@/lib/fixedTransactions';
 import { formatCurrency } from '@/lib/currencies';
 import { Plus, PiggyBank, WifiOff, TrendingUp, TrendingDown } from 'lucide-react';
@@ -10,8 +10,14 @@ import TransactionSheet from '@/components/TransactionSheet';
 import { TransactionList } from '@/components/TransactionList';
 import { MonthPicker } from '@/components/MonthPicker';
 import { TransactionFilters, TransactionFiltersState, defaultFilters, filterTransactions } from '@/components/TransactionFilters';
+import { BudgetManager } from '@/components/BudgetManager';
 
-export default function Dashboard() {
+interface DashboardProps {
+  initialAction?: 'income' | 'expense' | null;
+  onActionHandled?: () => void;
+}
+
+export default function Dashboard({ initialAction, onActionHandled }: DashboardProps) {
   const { t } = useI18n();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -22,26 +28,39 @@ export default function Dashboard() {
   const [transactionType, setTransactionType] = useState<'income' | 'expense' | null>(null);
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
   const [filters, setFilters] = useState<TransactionFiltersState>(defaultFilters);
+  const [defaultCurrency, setDefaultCurrency] = useState('BRL');
 
   const loadData = async () => {
     // First, generate fixed transactions for the selected month if not already done
     await generateFixedTransactionsForMonth(currentDate.getFullYear(), currentDate.getMonth());
     
-    const [acc, cats, tx, bal] = await Promise.all([
+    const [acc, cats, tx, bal, settings] = await Promise.all([
       getAccounts(),
       getCategories(),
       getTransactionsByMonth(currentDate.getFullYear(), currentDate.getMonth()),
       getAccountBalances(),
+      getSettings(),
     ]);
     setAccounts(acc);
     setCategories(cats);
     setTransactions(tx);
     setBalances(bal);
+    if (settings?.defaultCurrency) {
+      setDefaultCurrency(settings.defaultCurrency);
+    }
   };
 
   useEffect(() => {
     loadData();
   }, [currentDate]);
+
+  // Handle initial action from PWA shortcuts
+  useEffect(() => {
+    if (initialAction && !transactionType) {
+      setTransactionType(initialAction);
+      onActionHandled?.();
+    }
+  }, [initialAction, transactionType, onActionHandled]);
 
   // Apply filters
   const filteredTransactions = useMemo(() => {
@@ -140,6 +159,15 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Budget Manager */}
+        <BudgetManager
+          categories={categories}
+          transactions={transactions}
+          year={currentDate.getFullYear()}
+          month={currentDate.getMonth()}
+          defaultCurrency={defaultCurrency}
+        />
 
         {/* Filters */}
         <TransactionFilters

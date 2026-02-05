@@ -311,5 +311,17 @@
     "transactionsCount": "{count} transações",
     "categoriesCount": "{count} categorias",
     "accountsCount": "{count} contas"
+  },
+  "budget": {
+    "title": "Metas de Gastos",
+    "addBudget": "Definir Meta",
+    "editBudget": "Editar Meta",
+    "monthlyLimit": "Limite mensal",
+    "noBudgets": "Defina metas para acompanhar seus gastos por categoria",
+    "spent": "Gasto",
+    "remaining": "Restante",
+    "exceeded": "Excedido",
+    "onTrack": "Dentro da meta",
+    "warning": "Atenção"
   }
 }

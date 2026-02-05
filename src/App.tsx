@@ -32,10 +32,20 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const [ready, setReady] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [initialAction, setInitialAction] = useState<'income' | 'expense' | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
     initializeDB().then(() => setReady(true));
+    
+    // Handle PWA shortcuts
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    if (action === 'income' || action === 'expense') {
+      setInitialAction(action);
+      // Clean URL without reloading
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
 
   if (!ready) {
@@ -51,7 +61,7 @@ function AppContent() {
 
   return (
     <>
-      {activeTab === 'dashboard' && <Dashboard />}
+      {activeTab === 'dashboard' && <Dashboard initialAction={initialAction} onActionHandled={() => setInitialAction(null)} />}
       {activeTab === 'reports' && <Reports />}
       {activeTab === 'settings' && <SettingsPage />}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />

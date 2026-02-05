@@ -323,5 +323,10 @@
     "exceeded": "Excedido",
     "onTrack": "Dentro da meta",
     "warning": "Atenção"
+  },
+  "update": {
+    "title": "Atualização Disponível",
+    "description": "Uma nova versão do app está disponível. Atualize para ter as últimas melhorias.",
+    "button": "Atualizar Agora"
   }
 }

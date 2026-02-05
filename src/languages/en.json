@@ -323,5 +323,10 @@
     "exceeded": "Exceeded",
     "onTrack": "On track",
     "warning": "Warning"
+  },
+  "update": {
+    "title": "Update Available",
+    "description": "A new version of the app is available. Update now to get the latest improvements.",
+    "button": "Update Now"
   }
 }

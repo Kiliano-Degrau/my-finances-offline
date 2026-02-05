@@ -6,7 +6,8 @@ import Reports from '@/pages/Reports';
 import SettingsPage from '@/pages/SettingsPage';
 import BottomNav from '@/components/BottomNav';
 import { Toaster } from '@/components/ui/sonner';
-
+import { UpdatePrompt } from '@/components/UpdatePrompt';
+import { useServiceWorker } from '@/hooks/useServiceWorker';
 type Tab = 'dashboard' | 'reports' | 'settings';
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -34,6 +35,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [initialAction, setInitialAction] = useState<'income' | 'expense' | null>(null);
   const { t } = useI18n();
+  const { updateAvailable, applyUpdate } = useServiceWorker();
 
   useEffect(() => {
     initializeDB().then(() => setReady(true));
@@ -65,6 +67,7 @@ function AppContent() {
       {activeTab === 'reports' && <Reports />}
       {activeTab === 'settings' && <SettingsPage />}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <UpdatePrompt open={updateAvailable} onUpdate={applyUpdate} />
     </>
   );
 }

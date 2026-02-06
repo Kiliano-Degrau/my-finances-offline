@@ -56,11 +56,15 @@ export default function Dashboard({ initialAction, onActionHandled }: DashboardP
 
   // Handle initial action from PWA shortcuts
   useEffect(() => {
-    if (initialAction && !transactionType) {
-      setTransactionType(initialAction);
-      onActionHandled?.();
+    if (initialAction) {
+      // Small delay to ensure component is fully mounted
+      const timer = setTimeout(() => {
+        setTransactionType(initialAction);
+        onActionHandled?.();
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [initialAction, transactionType, onActionHandled]);
+  }, [initialAction, onActionHandled]);
 
   // Apply filters
   const filteredTransactions = useMemo(() => {

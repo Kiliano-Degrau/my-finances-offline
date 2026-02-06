@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { Transaction, Category, getTransactionsByMonth, getCategories } from '@/lib/db';
+import { Transaction, Category, getTransactionsByMonth, getCategories, getSettings } from '@/lib/db';
 import { formatCurrency } from '@/lib/currencies';
-import { ChevronLeft, TrendingUp, TrendingDown, PieChart, BarChart3, Calendar } from 'lucide-react';
+import { ChevronLeft, TrendingUp, TrendingDown, PieChart, BarChart3, Calendar, LineChart as LineChartIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MonthPicker } from '@/components/MonthPicker';
+import { TrendChart } from '@/components/TrendChart';
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from 'recharts';
 
 interface ReportsProps {
@@ -18,10 +19,20 @@ export default function Reports({ onBack }: ReportsProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [currency, setCurrency] = useState('BRL');
+  const [activeTab, setActiveTab] = useState('expenses');
 
   useEffect(() => {
     loadData();
+    loadSettings();
   }, [currentDate]);
+
+  const loadSettings = async () => {
+    const settings = await getSettings();
+    if (settings?.defaultCurrency) {
+      setCurrency(settings.defaultCurrency);
+    }
+  };
 
   const loadData = async () => {
     const [tx, cats] = await Promise.all([
@@ -132,40 +143,46 @@ export default function Reports({ onBack }: ReportsProps) {
       </header>
 
       <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
-        <MonthPicker currentDate={currentDate} onDateChange={setCurrentDate} />
+        {/* Show month picker only for monthly tabs */}
+        {activeTab !== 'trend' && (
+          <MonthPicker currentDate={currentDate} onDateChange={setCurrentDate} />
+        )}
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-3 gap-2">
-          <Card className="border-l-4 border-l-income">
-            <CardContent className="p-3">
-              <TrendingUp className="h-4 w-4 text-income mb-1" />
-              <p className="text-xs text-muted-foreground">{t('dashboard.totalIncome')}</p>
-              <p className="font-bold text-income">{formatCurrency(totals.income, 'BRL')}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-expense">
-            <CardContent className="p-3">
-              <TrendingDown className="h-4 w-4 text-expense mb-1" />
-              <p className="text-xs text-muted-foreground">{t('dashboard.totalExpense')}</p>
-              <p className="font-bold text-expense">{formatCurrency(totals.expense, 'BRL')}</p>
-            </CardContent>
-          </Card>
-          <Card className={`border-l-4 ${totals.balance >= 0 ? 'border-l-income' : 'border-l-expense'}`}>
-            <CardContent className="p-3">
-              <BarChart3 className="h-4 w-4 text-muted-foreground mb-1" />
-              <p className="text-xs text-muted-foreground">{t('reports.balance')}</p>
-              <p className={`font-bold ${totals.balance >= 0 ? 'text-income' : 'text-expense'}`}>
-                {formatCurrency(totals.balance, 'BRL')}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Summary cards - hide for trend view */}
+        {activeTab !== 'trend' && (
+          <div className="grid grid-cols-3 gap-2">
+            <Card className="border-l-4 border-l-income">
+              <CardContent className="p-3">
+                <TrendingUp className="h-4 w-4 text-income mb-1" />
+                <p className="text-xs text-muted-foreground">{t('dashboard.totalIncome')}</p>
+                <p className="font-bold text-income">{formatCurrency(totals.income, currency)}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-l-4 border-l-expense">
+              <CardContent className="p-3">
+                <TrendingDown className="h-4 w-4 text-expense mb-1" />
+                <p className="text-xs text-muted-foreground">{t('dashboard.totalExpense')}</p>
+                <p className="font-bold text-expense">{formatCurrency(totals.expense, currency)}</p>
+              </CardContent>
+            </Card>
+            <Card className={`border-l-4 ${totals.balance >= 0 ? 'border-l-income' : 'border-l-expense'}`}>
+              <CardContent className="p-3">
+                <BarChart3 className="h-4 w-4 text-muted-foreground mb-1" />
+                <p className="text-xs text-muted-foreground">{t('reports.balance')}</p>
+                <p className={`font-bold ${totals.balance >= 0 ? 'text-income' : 'text-expense'}`}>
+                  {formatCurrency(totals.balance, currency)}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-        <Tabs defaultValue="expenses" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="expenses">{t('transaction.expense')}</TabsTrigger>
             <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
-            <TabsTrigger value="timeline">{t('reports.spendingFrequency')}</TabsTrigger>
+            <TabsTrigger value="timeline">{t('reports.daily')}</TabsTrigger>
+            <TabsTrigger value="trend">{t('reports.trend')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="expenses" className="space-y-4">
@@ -408,6 +425,10 @@ export default function Reports({ onBack }: ReportsProps) {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="trend" className="space-y-4">
+            <TrendChart currency={currency} />
           </TabsContent>
         </Tabs>
       </main>

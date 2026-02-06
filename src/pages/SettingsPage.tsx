@@ -3,10 +3,11 @@ import { useI18n } from '@/lib/i18n';
 import { getSettings, updateSettings, deleteAllData, UserSettings, getDB, Transaction, Category, Account } from '@/lib/db';
 import { currencies } from '@/lib/currencies';
 import { usePWA } from '@/hooks/usePWA';
+import { useBiometrics } from '@/hooks/useBiometrics';
 import { 
   ChevronLeft, Globe, Palette, DollarSign, Shield, Download, 
   Trash2, Info, ExternalLink, Moon, Sun, Monitor, Smartphone, Upload,
-  Tag, Wallet
+  Tag, Wallet, Fingerprint
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -46,6 +47,7 @@ interface ImportData {
 export default function SettingsPage({ onBack }: SettingsPageProps) {
   const { t, language, setLanguage, availableLanguages } = useI18n();
   const { canInstall, isInstalled, install } = usePWA();
+  const { isSupported: biometricsSupported, isEnabled: biometricsEnabled, enable: enableBiometrics, disable: disableBiometrics } = useBiometrics();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [theme, setThemeState] = useState<ThemeMode>('system');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -54,6 +56,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [showAccountManagement, setShowAccountManagement] = useState(false);
   const [importData, setImportData] = useState<ImportData | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [isTogglingBiometrics, setIsTogglingBiometrics] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -98,6 +101,25 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     const success = await install();
     if (success) {
       toast.success(t('settings.installSuccess'));
+    }
+  };
+
+  const handleBiometricsToggle = async (enabled: boolean) => {
+    setIsTogglingBiometrics(true);
+    try {
+      if (enabled) {
+        const success = await enableBiometrics();
+        if (success) {
+          toast.success(t('settings.biometricsEnabled'));
+        } else {
+          toast.error(t('biometrics.failed'));
+        }
+      } else {
+        await disableBiometrics();
+        toast.success(t('settings.biometricsDisabled'));
+      }
+    } finally {
+      setIsTogglingBiometrics(false);
     }
   };
 
@@ -359,6 +381,31 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Security */}
+        {biometricsSupported && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Fingerprint className="h-4 w-4" />
+                {t('settings.security')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>{t('settings.biometrics')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('settings.biometricsDesc')}</p>
+                </div>
+                <Switch 
+                  checked={biometricsEnabled} 
+                  onCheckedChange={handleBiometricsToggle}
+                  disabled={isTogglingBiometrics}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Install App */}
         {canInstall && !isInstalled && (

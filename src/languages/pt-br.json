@@ -170,7 +170,12 @@
     "awaitingData": "Aguardando despesas para gerar o gráfico deste mês",
     "awaitingIncomeData": "Aguardando receitas para gerar o gráfico deste mês",
     "effectuated": "efetivado",
-    "pending": "pendente"
+    "pending": "pendente",
+    "daily": "Diário",
+    "trend": "Tendência",
+    "trend12Months": "Últimos 12 meses",
+    "cumulativeBalance": "Saldo Acumulado",
+    "monthlyBalance": "Balanço Mensal"
   },
   "nav": {
     "dashboard": "Início",
@@ -328,5 +333,11 @@
     "title": "Atualização Disponível",
     "description": "Uma nova versão do app está disponível. Atualize para ter as últimas melhorias.",
     "button": "Atualizar Agora"
+  },
+  "biometrics": {
+    "unlock": "Desbloquear com Biometria",
+    "failed": "Falha na autenticação. Tente novamente.",
+    "enableTitle": "Ativar Biometria",
+    "enableDesc": "Use sua impressão digital ou reconhecimento facial para proteger o app"
   }
 }

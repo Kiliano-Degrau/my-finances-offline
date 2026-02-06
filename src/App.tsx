@@ -7,7 +7,10 @@ import SettingsPage from '@/pages/SettingsPage';
 import BottomNav from '@/components/BottomNav';
 import { Toaster } from '@/components/ui/sonner';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
+import { BiometricLock } from '@/components/BiometricLock';
 import { useServiceWorker } from '@/hooks/useServiceWorker';
+import { useBiometrics } from '@/hooks/useBiometrics';
+
 type Tab = 'dashboard' | 'reports' | 'settings';
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -34,8 +37,10 @@ function AppContent() {
   const [ready, setReady] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [initialAction, setInitialAction] = useState<'income' | 'expense' | null>(null);
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const { t } = useI18n();
   const { updateAvailable, applyUpdate } = useServiceWorker();
+  const { isLocked, isLoading: biometricsLoading, unlock } = useBiometrics();
 
   useEffect(() => {
     initializeDB().then(() => setReady(true));
@@ -50,7 +55,18 @@ function AppContent() {
     }
   }, []);
 
-  if (!ready) {
+  const handleUnlock = async () => {
+    setIsUnlocking(true);
+    try {
+      const success = await unlock();
+      return success;
+    } finally {
+      setIsUnlocking(false);
+    }
+  };
+
+  // Show loading while initializing
+  if (!ready || biometricsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -59,6 +75,11 @@ function AppContent() {
         </div>
       </div>
     );
+  }
+
+  // Show biometric lock if enabled and locked
+  if (isLocked) {
+    return <BiometricLock onUnlock={handleUnlock} isUnlocking={isUnlocking} />;
   }
 
   return (

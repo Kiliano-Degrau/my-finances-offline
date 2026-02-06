@@ -170,7 +170,12 @@
     "awaitingData": "Awaiting expenses to generate this month's chart",
     "awaitingIncomeData": "Awaiting income to generate this month's chart",
     "effectuated": "effectuated",
-    "pending": "pending"
+    "pending": "pending",
+    "daily": "Daily",
+    "trend": "Trend",
+    "trend12Months": "Last 12 months",
+    "cumulativeBalance": "Cumulative Balance",
+    "monthlyBalance": "Monthly Balance"
   },
   "nav": {
     "dashboard": "Home",
@@ -328,5 +333,11 @@
     "title": "Update Available",
     "description": "A new version of the app is available. Update now to get the latest improvements.",
     "button": "Update Now"
+  },
+  "biometrics": {
+    "unlock": "Unlock with Biometrics",
+    "failed": "Authentication failed. Please try again.",
+    "enableTitle": "Enable Biometrics",
+    "enableDesc": "Use your fingerprint or face recognition to protect the app"
   }
 }

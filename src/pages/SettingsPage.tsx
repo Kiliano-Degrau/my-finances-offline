@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { getSettings, updateSettings, UserSettings, getDB, Transaction, Category, Account } from '@/lib/db';
 import { currencies } from '@/lib/currencies';
@@ -28,7 +28,9 @@ import {
 import { toast } from 'sonner';
 import CategoryManagement from '@/components/CategoryManagement';
 import AccountManagement from '@/components/AccountManagement';
-import { DeleteDataDialog } from '@/components/DeleteDataDialog';
+
+// Lazy load to avoid circular dependency
+const DeleteDataDialog = lazy(() => import('@/components/DeleteDataDialog').then(mod => ({ default: mod.DeleteDataDialog })));
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -486,10 +488,12 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       </main>
 
       {/* Delete Data Dialog - Multi-step secure deletion */}
-      <DeleteDataDialog 
-        open={showDeleteDialog} 
-        onOpenChange={setShowDeleteDialog}
-      />
+      <Suspense fallback={null}>
+        <DeleteDataDialog 
+          open={showDeleteDialog} 
+          onOpenChange={setShowDeleteDialog}
+        />
+      </Suspense>
 
       {/* Import Confirmation Dialog */}
       <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>

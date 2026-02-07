@@ -339,5 +339,23 @@
     "failed": "Authentication failed. Please try again.",
     "enableTitle": "Enable Biometrics",
     "enableDesc": "Use your fingerprint or face recognition to protect the app"
+  },
+  "deleteFlow": {
+    "title": "Delete All Data",
+    "warning": "WARNING: This action is irreversible! All your data will be permanently deleted.",
+    "instruction": "To confirm deletion, type the code below:",
+    "typeCode": "Type this code",
+    "waitSeconds": "Wait {seconds} seconds to continue...",
+    "enterCode": "Enter the code above",
+    "wrongCode": "Wrong code. Please check and try again.",
+    "biometricsTitle": "Confirm Your Identity",
+    "biometricsDesc": "Since you have biometrics enabled, confirm your identity to proceed.",
+    "finalTitle": "Deleting Data",
+    "finalCountdown": "Wait {seconds} seconds before deleting everything...",
+    "readyToDelete": "Your data is ready to be permanently deleted.",
+    "cancelDeletion": "Cancel Deletion",
+    "lastChance": "This is your last chance. Click the button below to delete everything permanently.",
+    "deleteForever": "Delete Permanently",
+    "deleting": "Deleting..."
   }
 }

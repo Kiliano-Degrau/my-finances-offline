@@ -339,5 +339,23 @@
     "failed": "Falha na autenticação. Tente novamente.",
     "enableTitle": "Ativar Biometria",
     "enableDesc": "Use sua impressão digital ou reconhecimento facial para proteger o app"
+  },
+  "deleteFlow": {
+    "title": "Excluir Todos os Dados",
+    "warning": "ATENÇÃO: Esta ação é irreversível! Todos os seus dados serão permanentemente apagados.",
+    "instruction": "Para confirmar a exclusão, digite o código abaixo:",
+    "typeCode": "Digite este código",
+    "waitSeconds": "Aguarde {seconds} segundos para continuar...",
+    "enterCode": "Digite o código acima",
+    "wrongCode": "Código incorreto. Verifique e tente novamente.",
+    "biometricsTitle": "Confirme sua Identidade",
+    "biometricsDesc": "Como você tem biometria ativada, confirme sua identidade para prosseguir.",
+    "finalTitle": "Apagando Dados",
+    "finalCountdown": "Aguarde {seconds} segundos antes de apagar tudo...",
+    "readyToDelete": "Seus dados estão prontos para serem apagados permanentemente.",
+    "cancelDeletion": "Cancelar Exclusão",
+    "lastChance": "Esta é sua última chance. Clique no botão abaixo para apagar tudo permanentemente.",
+    "deleteForever": "Excluir Permanentemente",
+    "deleting": "Excluindo..."
   }
 }

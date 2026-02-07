@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { getSettings, updateSettings, deleteAllData, UserSettings, getDB, Transaction, Category, Account } from '@/lib/db';
+import { getSettings, updateSettings, UserSettings, getDB, Transaction, Category, Account } from '@/lib/db';
 import { currencies } from '@/lib/currencies';
 import { usePWA } from '@/hooks/usePWA';
 import { useBiometrics } from '@/hooks/useBiometrics';
 import { 
   ChevronLeft, Globe, Palette, DollarSign, Shield, Download, 
-  Trash2, Info, ExternalLink, Moon, Sun, Monitor, Smartphone, Upload,
+  Trash2, Info, Moon, Sun, Monitor, Smartphone, Upload,
   Tag, Wallet, Fingerprint
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ import {
 import { toast } from 'sonner';
 import CategoryManagement from '@/components/CategoryManagement';
 import AccountManagement from '@/components/AccountManagement';
+import { DeleteDataDialog } from '@/components/DeleteDataDialog';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -121,13 +122,6 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     } finally {
       setIsTogglingBiometrics(false);
     }
-  };
-
-  const handleDeleteAllData = async () => {
-    await deleteAllData();
-    setShowDeleteDialog(false);
-    toast.success(t('settings.dataDeleted'));
-    window.location.reload();
   };
 
   const handleExportData = async () => {
@@ -491,26 +485,11 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
         </Card>
       </main>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('settings.deleteAllData')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('settings.deleteWarning')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteAllData}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delete Data Dialog - Multi-step secure deletion */}
+      <DeleteDataDialog 
+        open={showDeleteDialog} 
+        onOpenChange={setShowDeleteDialog}
+      />
 
       {/* Import Confirmation Dialog */}
       <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>

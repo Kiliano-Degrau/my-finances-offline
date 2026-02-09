@@ -8,7 +8,7 @@ interface BiometricsState {
   isLoading: boolean;
 }
 
-export function useBiometrics() {
+export function useBiometrics(dbReady: boolean = true) {
   const [state, setState] = useState<BiometricsState>({
     isSupported: false,
     isEnabled: false,
@@ -31,8 +31,10 @@ export function useBiometrics() {
     }
   }, []);
 
-  // Load settings on mount
+  // Load settings on mount - only after DB is ready
   useEffect(() => {
+    if (!dbReady) return;
+    
     const init = async () => {
       const isSupported = await checkSupport();
       const settings = await getSettings();
@@ -47,7 +49,7 @@ export function useBiometrics() {
       });
     };
     init();
-  }, [checkSupport]);
+  }, [checkSupport, dbReady]);
 
   // Enable biometrics
   const enable = useCallback(async (): Promise<boolean> => {

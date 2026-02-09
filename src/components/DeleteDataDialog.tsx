@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { useBiometrics } from '@/hooks/useBiometrics';
 import { deleteAllData } from '@/lib/db';
 import { AlertTriangle, Fingerprint, Clock, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,8 @@ import { toast } from 'sonner';
 interface DeleteDataDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  biometricsEnabled?: boolean;
+  onBiometricUnlock?: () => Promise<boolean>;
 }
 
 // Generate random 8-letter uppercase code
@@ -32,9 +33,8 @@ function generateCaptcha(): string {
 
 type Step = 'captcha' | 'biometrics' | 'countdown';
 
-export function DeleteDataDialog({ open, onOpenChange }: DeleteDataDialogProps) {
+export function DeleteDataDialog({ open, onOpenChange, biometricsEnabled = false, onBiometricUnlock }: DeleteDataDialogProps) {
   const { t } = useI18n();
-  const { isEnabled: biometricsEnabled, unlock } = useBiometrics();
   
   // Step management
   const [step, setStep] = useState<Step>('captcha');
@@ -121,7 +121,7 @@ export function DeleteDataDialog({ open, onOpenChange }: DeleteDataDialogProps) 
   };
 
   const handleBiometricsConfirm = async () => {
-    const success = await unlock();
+    const success = onBiometricUnlock ? await onBiometricUnlock() : true;
     if (success) {
       setStep('countdown');
     } else {

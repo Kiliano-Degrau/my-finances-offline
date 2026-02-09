@@ -50,7 +50,7 @@ interface ImportData {
 export default function SettingsPage({ onBack }: SettingsPageProps) {
   const { t, language, setLanguage, availableLanguages } = useI18n();
   const { canInstall, isInstalled, install } = usePWA();
-  const { isSupported: biometricsSupported, isEnabled: biometricsEnabled, enable: enableBiometrics, disable: disableBiometrics } = useBiometrics();
+  const { isSupported: biometricsSupported, isEnabled: biometricsEnabled, enable: enableBiometrics, disable: disableBiometrics, unlock: biometricsUnlock } = useBiometrics();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [theme, setThemeState] = useState<ThemeMode>('system');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -492,6 +492,8 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
         <DeleteDataDialog 
           open={showDeleteDialog} 
           onOpenChange={setShowDeleteDialog}
+          biometricsEnabled={biometricsEnabled}
+          onBiometricUnlock={biometricsUnlock}
         />
       </Suspense>
 

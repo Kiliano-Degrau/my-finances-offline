@@ -357,5 +357,48 @@
     "lastChance": "This is your last chance. Click the button below to delete everything permanently.",
     "deleteForever": "Delete Permanently",
     "deleting": "Deleting..."
+  },
+  "externalKeys": {
+    "title": "External Service Keys",
+    "description": "Configure API keys for third-party services used by the app.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "keySaved": "Key saved successfully!",
+    "aiImport": {
+      "title": "Import Transactions via AI",
+      "description": "Adds a file importer (Images, PDF, CSV, etc.) to bulk-import transactions using artificial intelligence.",
+      "apiKeyLabel": "Google Gemini API",
+      "saved": "Saved",
+      "howToGetKey": "How to get your API key:",
+      "step1": "Go to",
+      "step2": "Sign in with your Google account.",
+      "step3": "Click 'Create API key' and select or create a project.",
+      "step4": "Copy the generated key and paste it in the field above.",
+      "freeInfo": "Google Gemini offers a free tier. For personal use, the cost is fractions of a cent per request.",
+      "testing": "Testing Gemini API...",
+      "emptyKey": "Please enter an API key.",
+      "keyValid": "✅ Valid key! Saved successfully.",
+      "keyInvalid": "❌ Invalid key. Please check and try again.",
+      "keyRemoved": "Key removed successfully."
+    }
+  },
+  "aiImport": {
+    "title": "Import File",
+    "chooseSource": "Choose how you want to import your statements, invoices or receipts.",
+    "camera": "📷 Take Photo",
+    "gallery": "📁 Gallery / Files",
+    "acceptedFormats": "Accepted formats: Images (JPG, PNG, GIF, WebP), PDF, CSV, TXT",
+    "maxFilesWarning": "Maximum {max} files. Only the first ones will be processed.",
+    "filesSelected": "{count} file(s) selected",
+    "progress": {
+      "loadingConfig": "Loading settings...",
+      "configLoaded": "Settings loaded.",
+      "preparingFiles": "Preparing files...",
+      "noApiKey": "Gemini API key not found. Please configure it in Settings.",
+      "noValidFiles": "No valid files to process.",
+      "working": "Processing...",
+      "complete": "Done! {total} transaction(s) found.",
+      "error": "Error during import"
+    }
   }
 }

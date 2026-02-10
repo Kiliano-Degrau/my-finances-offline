@@ -357,5 +357,48 @@
     "lastChance": "Esta é sua última chance. Clique no botão abaixo para apagar tudo permanentemente.",
     "deleteForever": "Excluir Permanentemente",
     "deleting": "Excluindo..."
+  },
+  "externalKeys": {
+    "title": "Chaves de Serviços Externos",
+    "description": "Configure as chaves de API para serviços de terceiros utilizados pelo aplicativo.",
+    "enabled": "Ativado",
+    "disabled": "Desativado",
+    "keySaved": "Chave salva com sucesso!",
+    "aiImport": {
+      "title": "Importar Transações via IA",
+      "description": "Insere um importador de arquivos (Imagens, PDF, CSV e etc) para importar transações em massa usando inteligência artificial.",
+      "apiKeyLabel": "API do Google Gemini",
+      "saved": "Salvo",
+      "howToGetKey": "Como obter sua chave de API:",
+      "step1": "Acesse o",
+      "step2": "Faça login com sua conta Google.",
+      "step3": "Clique em 'Create API key' e selecione ou crie um projeto.",
+      "step4": "Copie a chave gerada e cole no campo acima.",
+      "freeInfo": "O Google Gemini oferece um tier gratuito. Para uso pessoal, o custo é de frações de centavo por requisição.",
+      "testing": "Testando API Gemini...",
+      "emptyKey": "Digite uma chave de API.",
+      "keyValid": "✅ Chave válida! Salva com sucesso.",
+      "keyInvalid": "❌ Chave inválida. Verifique e tente novamente.",
+      "keyRemoved": "Chave removida com sucesso."
+    }
+  },
+  "aiImport": {
+    "title": "Importar Arquivo",
+    "chooseSource": "Escolha como deseja importar seus extratos, faturas ou comprovantes.",
+    "camera": "📷 Tirar Foto",
+    "gallery": "📁 Galeria / Arquivos",
+    "acceptedFormats": "Formatos aceitos: Imagens (JPG, PNG, GIF, WebP), PDF, CSV, TXT",
+    "maxFilesWarning": "Máximo de {max} arquivos. Apenas os primeiros serão processados.",
+    "filesSelected": "{count} arquivo(s) selecionado(s)",
+    "progress": {
+      "loadingConfig": "Carregando configurações...",
+      "configLoaded": "Configurações carregadas.",
+      "preparingFiles": "Preparando arquivos...",
+      "noApiKey": "Chave da API do Gemini não encontrada. Configure em Configurações.",
+      "noValidFiles": "Nenhum arquivo válido para processar.",
+      "working": "Processando...",
+      "complete": "Concluído! {total} lançamento(s) encontrado(s).",
+      "error": "Erro durante a importação"
+    }
   }
 }

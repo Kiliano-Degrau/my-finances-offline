@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useI18n } from '@/lib/i18n';
-import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, getSettings, Account, Transaction, Category } from '@/lib/db';
+import { getAccounts, getTransactionsByMonth, getAccountBalances, getCategories, getSettings, getDB, Account, Transaction, Category } from '@/lib/db';
 import { generateFixedTransactionsForMonth } from '@/lib/fixedTransactions';
 import { formatCurrency } from '@/lib/currencies';
-import { Plus, PiggyBank, WifiOff, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, PiggyBank, WifiOff, TrendingUp, TrendingDown, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TransactionSheet from '@/components/TransactionSheet';
@@ -11,6 +11,7 @@ import { TransactionList } from '@/components/TransactionList';
 import { MonthPicker } from '@/components/MonthPicker';
 import { TransactionFilters, TransactionFiltersState, defaultFilters, filterTransactions } from '@/components/TransactionFilters';
 import { BudgetManager } from '@/components/BudgetManager';
+import ImportAIDialog from '@/components/ImportAIDialog';
 
 interface DashboardProps {
   initialAction?: 'income' | 'expense' | null;
@@ -30,8 +31,11 @@ export default function Dashboard({ initialAction, onActionHandled }: DashboardP
   const [filters, setFilters] = useState<TransactionFiltersState>(defaultFilters);
   const [defaultCurrency, setDefaultCurrency] = useState('BRL');
 
+  // AI Import state
+  const [aiImportAvailable, setAiImportAvailable] = useState(false);
+  const [showImportAI, setShowImportAI] = useState(false);
+
   const loadData = async () => {
-    // First, generate fixed transactions for the selected month if not already done
     await generateFixedTransactionsForMonth(currentDate.getFullYear(), currentDate.getMonth());
     
     const [acc, cats, tx, bal, settings] = await Promise.all([
@@ -50,14 +54,28 @@ export default function Dashboard({ initialAction, onActionHandled }: DashboardP
     }
   };
 
+  // Check if AI import is configured and enabled
+  const checkAiImport = async () => {
+    try {
+      const db = await getDB();
+      const data = await db.get('settings', 'externalKeys') as any;
+      setAiImportAvailable(!!data?.geminiEnabled && !!data?.geminiApiKey);
+    } catch {
+      setAiImportAvailable(false);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, [currentDate]);
 
+  useEffect(() => {
+    checkAiImport();
+  }, []);
+
   // Handle initial action from PWA shortcuts
   useEffect(() => {
     if (initialAction) {
-      // Small delay to ensure component is fully mounted
       const timer = setTimeout(() => {
         setTransactionType(initialAction);
         onActionHandled?.();
@@ -195,6 +213,16 @@ export default function Dashboard({ initialAction, onActionHandled }: DashboardP
       <div className="fixed right-4 bottom-24 z-50">
         {showFab && (
           <div className="absolute bottom-16 right-0 flex flex-col gap-2 animate-fade-in">
+            {/* Import AI - only visible if configured */}
+            {aiImportAvailable && (
+              <Button
+                className="bg-secondary hover:bg-secondary/80 text-secondary-foreground shadow-lg"
+                onClick={() => { setShowImportAI(true); setShowFab(false); }}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                {t('aiImport.title')}
+              </Button>
+            )}
             <Button
               className="bg-income hover:bg-income/90 text-income-foreground shadow-lg"
               onClick={() => { setTransactionType('income'); setShowFab(false); }}
@@ -226,6 +254,12 @@ export default function Dashboard({ initialAction, onActionHandled }: DashboardP
         editTransaction={editTransaction}
         onClose={() => { setTransactionType(null); setEditTransaction(null); }}
         onSave={() => { setTransactionType(null); setEditTransaction(null); loadData(); }}
+      />
+
+      {/* AI Import Dialog */}
+      <ImportAIDialog
+        open={showImportAI}
+        onClose={() => setShowImportAI(false)}
       />
     </div>
   );

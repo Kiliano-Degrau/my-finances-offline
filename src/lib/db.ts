@@ -1,9 +1,31 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { v4 as uuidv4 } from 'uuid';
 
+// ================================================================
+// HASH — Identificador único baseado em (description + value + date)
+// ================================================================
+function gerarHash(description: string | null, value: number | null, date: string | null): string {
+  const descNorm = (description || '').toLowerCase().replace(/\s+/g, '');
+  const valorFixed = (value || 0).toFixed(2);
+  const dateStr = date || '';
+  const str = `${descNorm}|${valorFixed}|${dateStr}`;
+
+  let h1 = 0x811c9dc5 >>> 0;
+  let h2 = 0x01000193 >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ c, 0x811c9dc5) >>> 0;
+  }
+  const hex1 = h1.toString(16).padStart(8, '0');
+  const hex2 = h2.toString(16).padStart(8, '0');
+  return (hex1 + hex2).substring(0, 12);
+}
+
 // Types
 export interface Transaction {
   id: string;
+  hash: string;
   type: 'income' | 'expense';
   value: number;
   currency: string;
@@ -244,12 +266,13 @@ export async function initializeDB(): Promise<void> {
 }
 
 // Transaction operations
-export async function addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction> {
+export async function addTransaction(transaction: Omit<Transaction, 'id' | 'hash' | 'createdAt' | 'updatedAt'>): Promise<Transaction> {
   const db = await getDB();
   const now = new Date().toISOString();
   const newTransaction: Transaction = {
     ...transaction,
     id: uuidv4(),
+    hash: gerarHash(transaction.description, transaction.value, transaction.date),
     createdAt: now,
     updatedAt: now,
   };
@@ -259,7 +282,7 @@ export async function addTransaction(transaction: Omit<Transaction, 'id' | 'crea
 
 // Add recurring transactions (creates multiple installments)
 export async function addRecurringTransaction(
-  transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>
+  transaction: Omit<Transaction, 'id' | 'hash' | 'createdAt' | 'updatedAt'>
 ): Promise<Transaction[]> {
   if (!transaction.isRepeating || !transaction.repeatConfig) {
     const single = await addTransaction(transaction);
@@ -294,10 +317,13 @@ export async function addRecurringTransaction(
         break;
     }
 
+    const dateStr = installmentDate.toISOString().split('T')[0];
+
     const newTransaction: Transaction = {
       ...transaction,
       id: uuidv4(),
-      date: installmentDate.toISOString().split('T')[0],
+      hash: gerarHash(transaction.description, transaction.value, dateStr),
+      date: dateStr,
       parentRepeatId: parentId,
       repeatIndex: i + 1,
       repeatTotal: times,
@@ -317,9 +343,12 @@ export async function updateTransaction(id: string, updates: Partial<Transaction
   const existing = await db.get('transactions', id);
   if (!existing) return undefined;
 
+  // Merge first to get the final state, then recalculate hash
+  const merged = { ...existing, ...updates };
+
   const updated: Transaction = {
-    ...existing,
-    ...updates,
+    ...merged,
+    hash: gerarHash(merged.description, merged.value, merged.date),
     updatedAt: new Date().toISOString(),
   };
   await db.put('transactions', updated);
